@@ -1,0 +1,133 @@
+# We add mockbin.com to the APIs managed by Kong (mockbin.com is a sample API provided by Mashape)
+$ curl -s -i -X POST --url http://$(docker-machine ip default):8001/apis/ --data 'name=mockbin' --data 'upstream_url=http://mockbin.com/' --data 'request_host=mockbin.com'
+HTTP/1.1 201 Created
+Date: Wed, 17 Aug 2016 11:31:56 GMT
+Content-Type: application/json; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/0.8.3
+
+{"upstream_url":"http:\/\/mockbin.com\/","strip_request_path":false,"id":"15bce33c-bbcd-481f-9c9f-385a459bb243","created_at":1471433516000,"preserve_host":false,"name":"mockbin","request_host":"mockbin.com"}
+
+# We configure the APIs to use our helloworld plugin
+$ curl -s -i -X POST --url http://$(docker-machine ip default):8001/apis/mockbin/plugins/ --data 'name=helloworld'
+HTTP/1.1 201 Created
+Date: Wed, 17 Aug 2016 11:34:47 GMT
+Content-Type: application/json; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/0.8.3
+
+{"api_id":"15bce33c-bbcd-481f-9c9f-385a459bb243","id":"374eda35-6808-4ef7-8a5e-525cf7fb65bf","created_at":1471433687000,"enab led":true,"name":"helloworld","config":{}}
+
+# We test our API and check that we get our famous header
+curl -s -i -X GET --url http://$(docker-machine ip default):8000/ --header 'Host: mockbin.com'
+HTTP/1.1 200 OK
+Date: Wed, 17 Aug 2016 11:40:50 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+X-My-Header: Hello World Again!
+Set-Cookie: __cfduid=df90d44707591b6557ef4b693927973801471434043; expires=Thu, 17-Aug-17 11:40:43 GMT; path=/; domain=.mockbin.com; HttpOnly
+Etag: W/"29fe-zRGDbSTAzeA2BElashPm2g"
+Vary: Accept-Encoding
+Via: kong/0.8.3
+Server: cloudflare-nginx
+CF-RAY: 2d3cda50f6cd0663-SJC
+X-Kong-Upstream-Latency: 577
+X-Kong-Proxy-Latency: 0
+
+<!DOCTYPE html><html><head><meta 
+... lots of html blahblah...
+
+
+$ curl -s -i -X GET --url http://$(docker-machine ip default):8001/apis/mockbin/plugins                                       HTTP/1.1 200 OK
+Date: Thu, 18 Aug 2016 01:07:43 GMT
+Content-Type: application/json; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/0.8.3
+
+{"data":[{"api_id":"15bce33c-bbcd-481f-9c9f-385a459bb243","id":"374eda35-6808-4ef7-8a5e-525cf7fb65bf","created_at":1471433687000,"enabled":true,"name":"helloworld","config":{}}],"total":1}
+
+$ curl -s -i -X PATCH --url http://$(docker-machine ip default):8001/apis/mockbin/plugins/374eda35-6808-4ef7-8a5e-525cf7fb65bf \
+-d 'config.say_hello=false'
+HTTP/1.1 200 OK
+Date: Thu, 18 Aug 2016 01:17:20 GMT
+Content-Type: application/json; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/0.8.3
+
+{"api_id":"15bce33c-bbcd-481f-9c9f-385a459bb243","id":"374eda35-6808-4ef7-8a5e-525cf7fb65bf","created_at":1471433687000,"enabled":true,"name":"helloworld","config":{"say_hello":false}}
+
+$ curl -s -i -X PATCH --url http://$(docker-machine ip default):8001/apis/mockbin/plugins/374eda35-6808-4ef7-8a5e-525cf7fb65bf \
+-d 'config.message=Hello Sumapay!!'
+HTTP/1.1 200 OK
+Date: Thu, 18 Aug 2016 01:19:32 GMT
+Content-Type: application/json; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/0.8.3
+
+{"api_id":"15bce33c-bbcd-481f-9c9f-385a459bb243","id":"374eda35-6808-4ef7-8a5e-525cf7fb65bf","created_at":1471433687000,"enabled":true,"name":"helloworld","config":{"message":"Hello Sumapay!!","say_hello":false}}
+
+
+$  curl -s -i -X GET --url http://$(docker-machine ip default):8000/ --header 'Host: mockbin.com'
+HTTP/1.1 200 OK
+Date: Thu, 18 Aug 2016 01:23:56 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+b-world: b-world
+c-world: c-world
+X-My-Header: Hello World Again!
+X-Try-Header: I just try it!
+Hello-World: Hello Sumapay!!
+Set-Cookie: __cfduid=d511ab7a172d059ef44a1ca356f403ba41471483428; expires=Fri, 18-Aug-17 01:23:48 GMT; path=/; domain=.mockbin.com; HttpOnly
+Etag: W/"29fe-zRGDbSTAzeA2BElashPm2g"
+Vary: Accept-Encoding
+Via: kong/0.8.3
+Server: cloudflare-nginx
+CF-RAY: 2d419002c0f12114-LAX
+X-Kong-Upstream-Latency: 881
+X-Kong-Proxy-Latency: 0
+
+$ curl -s -i -X PATCH --url http://$(docker-machine ip default):8001/apis/mockbin/plugins/374eda35-6808-4ef7-8a5e-525cf7fb65bf \
+-d 'config.say_hello=true'
+HTTP/1.1 200 OK
+Date: Thu, 18 Aug 2016 01:26:55 GMT
+Content-Type: application/json; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: *
+Server: kong/0.8.3
+
+{"api_id":"15bce33c-bbcd-481f-9c9f-385a459bb243","id":"374eda35-6808-4ef7-8a5e-525cf7fb65bf","created_at":1471433687000,"enabled":true,"name":"helloworld","config":{"message":"Hello Sumapay!!","say_hello":true}}
+
+$  curl -s -i -X GET --url http://$(docker-machine ip default):8000/ --header 'Host: mockbin.com'                             HTTP/1.1 200 OK
+Date: Thu, 18 Aug 2016 01:27:06 GMT
+Content-Type: text/html; charset=utf-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+a-world: a-world
+c-world: c-world
+X-My-Header: Hello World Again!
+X-Try-Header: I just try it!
+Hello-World: Hello Sumapay!!
+Set-Cookie: __cfduid=d58a3d66f1160077e753099b2210d8a031471483618; expires=Fri, 18-Aug-17 01:26:58 GMT; path=/; domain=.mockbin.com; HttpOnly
+Etag: W/"29fe-zRGDbSTAzeA2BElashPm2g"
+Vary: Accept-Encoding
+Via: kong/0.8.3
+Server: cloudflare-nginx
+CF-RAY: 2d4194a50e8a2108-LAX
+X-Kong-Upstream-Latency: 3423
+X-Kong-Proxy-Latency: 0
+
+$ curl -s -X GET \
+  --url http://$(docker-machine ip worker01):8001/plugins/schema/helloworld

@@ -18,6 +18,7 @@ build = {
   modules = {
     ["kong.plugins.helloworld.handler"] = "helloworld/handler.lua",
     ["kong.plugins.helloworld.schema"] = "helloworld/schema.lua",
+    ["kong.plugins.helloworld.access"] = "helloworld/access.lua",
     ["kong.plugins.primeauth.handler"] = "primeauth/handler.lua",
     ["kong.plugins.primeauth.schema"] = "primeauth/schema.lua",
     ["kong.plugins.advokit-jwt.handler"] = "advokit-jwt/handler.lua",

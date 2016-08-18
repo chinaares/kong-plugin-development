@@ -3,7 +3,9 @@
 -- can be called from your child implementation and will print logs
 -- in your `error.log` file (where all logs are printed).
 local BasePlugin = require "kong.plugins.base_plugin"
+local access = require "kong.plugins.helloworld.access"
 local CustomHandler = BasePlugin:extend()
+
 
 -- Your plugin handler's constructor. If you are extending the
 -- Base Plugin handler, it's only role is to instanciate itself
@@ -36,8 +38,12 @@ function CustomHandler:access(config)
   CustomHandler.super.access(self)
 
   -- Implement any custom logic here
+  access.execute(config)
   ngx.header["X-My-Header"] = 'Hello World Again!';
-
+  ngx.header["X-Try-Header"] = 'I just try it!';
+  ngx.header["Hello-World"] = config.message;
+  print('I feel good!!!!!');
+  ngx.log(ngx.ERR, "============ OOOOOO World! ============")
 end
 
 -- Executed when all response headers bytes have been received from the upstream service.
